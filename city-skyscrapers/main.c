@@ -26,6 +26,19 @@ void print_matx(int **mat, int M, int N) {
     }
 }
 
+unsigned long sum_matrix(int **mat, int M, int N) {
+    unsigned long s = 0;
+    for (int i = 0; i < M; i++) {
+        printf("\n");
+        for (int j = 0; j < N; j++) {
+            int **row = mat + i;
+            int *v = (int *) *row;
+            s += *v;
+        }
+    }
+    return s;
+}
+
 int main(int argc, char *argv[]) {
 
     if (argc < 2 || (input_file = fopen(argv[1], "rt")) == (FILE *) NULL
@@ -58,14 +71,56 @@ int main(int argc, char *argv[]) {
         fscanf(input_file, "\n%d", &south_side[i]);
     }
 
-    // get the min number of people
+    unsigned int max_people = 0;
+    unsigned int min_people = 0;
+
+    // get the max number of people
     for (int i = 0; i < M; i++) {
-        for (int j = 0; j < M; j++) {
-            printf("\n -- ");
+        for (int j = 0; j < N; j++) {
+            int est_max = west_size[i] < south_side[j] ? west_size[i] : south_side[j];
+            max_people += est_max;
         }
     }
 
-    print_matx(min_city, M, N);
+    // work on the longest (N)  side of the city
+    int *ll = south_side;
+    int *lw = west_size;
+    if (M > N) {
+        int a = M;
+        M = N;
+        N = a;
+        ll = west_size;
+        lw = south_side;
+    }
 
+    // get the min number of people
+    int i, j;
+    for (i = 0; i < N; i++) {
+        min_people += ll[i];
+    }
+
+    for (i= 0; i < M; i++) {
+        int found = 0;
+        for (j = 0; j < N; j++) {
+            if (ll[j] != -1 && ll[j] == lw[i]) {
+                found = 1;
+                ll[j] = -1;
+                break;
+            }
+        }
+        if (!found) {
+            printf("\n adding %d ", lw[i]);
+            min_people += lw[i];
+        }
+    }
+
+    max_people *= C;
+    min_people *= c;
+    printf("\n Min people living %d ", min_people);
+    printf("\n Max people living %d ", max_people);
+
+    fprintf(output_file, "  Minimum: %d, maximum: %d", min_people, max_people);
+    close_files();
+    printf("\n");
     return 0;
 }
